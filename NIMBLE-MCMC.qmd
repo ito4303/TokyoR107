@@ -14,19 +14,129 @@ execute:
   echo: true
 ---
 
+## 自己紹介
+
+名前: 伊東宏樹
+
+勤務先: 森林総合研究所 北海道支所
+
+共訳書:
+
+::: {style="margin-left: 2em; text-align: left;"}
+[![](https://www.hanmoto.com/bd/img/9784320057807.jpg){fig-alt="BUGSで学ぶ階層モデリング入門" style="vertical-align: top;"}](https://www.hanmoto.com/bd/isbn/9784320057807) [![](https://www.hanmoto.com/bd/img/9784320058149.jpg){fig-alt="生態学のための階層モデリング" style="vertical-align: top;"}](https://www.hanmoto.com/bd/isbn/9784320058149)
+:::
+
 ## NIMBLE
 
-https://r-nimble.org/
+-   ウェブサイト: <https://r-nimble.org/>
+-   2023年5月31日にVersion 1.0.0リリース（現在は1.0.1）
+-   BUGS言語でモデルを記述し、マルコフ連鎖モンテカルロ (MCMC) 計算
+-   C++に変換、コンパイルして実行
 
 ## インストール
 
-```{r}
+C++コンパイラを含む開発環境が必要
+
+-   Windows: Rtools
+-   macOS: Command Line Tools (あるいはXcode)
+-   Linuxなど: それぞれの開発環境
+
+NIMBLE本体は普通にインストール
+
+```{r install}
 #| eval: false
 install.packages("nimble")
 ```
 
-## 使い方
+## 実行例
 
-```{r}
+```{r libarary_nimble}
 library(nimble)
 ```
+
+## データ
+
+```{r data}
+#| echo: false
+library(posterior)
+library(bayesplot)
+library(ggplot2)
+
+set.seed(123)
+N <- 40
+alpha <- 0
+beta <- 1
+sigma <- 2
+X <- runif(N, 0, 10)
+Y <- rnorm(N, alpha + beta * X, sigma)
+ggplot(data.frame(X, Y)) +
+  geom_point(aes(x = X, y = Y), size = 4, alpha = 0.7) +
+  theme_gray(base_family = "Helvetica", base_size = 18)
+```
+
+## モデルコード
+
+```{r code}
+code <- nimbleCode({
+  for (n in 1:N) {
+    mu[n] <- alpha + beta * X[n]
+    Y[n] ~ dnorm(mu[n], tau)
+  }
+  alpha ~ dnorm(0, 100)
+  beta ~ dnorm(0, 100)
+  tau <- 1 / (sigma * sigma)
+  sigma ~ dunif(0, 100)
+})
+```
+
+## NIMBLEのBUGS拡張
+
+```{r code2}
+code2 <- nimbleCode({
+  for (n in 1:N) {
+    Y[n] ~ dnorm(alpha + beta * X[n], sd = sigma)
+  }
+  alpha ~ dnorm(0, 100)
+  beta ~ dnorm(0, 100)
+  sigma ~ dunif(0, 100)
+})
+```
+
+## あてはめ
+
+```{r fit}
+#| output: false
+samp <- nimbleMCMC(code = code2,
+                   constants = list(N = N),
+                   data = list(X = X, Y = Y),
+                   niter = 6000, nburnin = 1000,
+                   nchains = 3,
+                   samplesAsCodaMCMC = TRUE) |>
+   posterior::as_draws()
+```
+
+## 結果の要約
+
+```{r summary}
+samp |>
+  summarise_draws(default_summary_measures(),
+                  "rhat")
+```
+
+## 連鎖の軌跡のプロット
+
+```{r traceplot}
+bayesplot::mcmc_trace(samp)
+```
+
+## 密度のプロット
+
+```{r densplot}
+bayesplot::mcmc_dens(samp)
+```
+
+## その他の機能
+
+-   WAIC
+-   空間統計モデル（CAR: Conditional AutoRegression）
+-   逐次モンテカルロ（粒子フィルタ, nimbleSMCパッケージ）
