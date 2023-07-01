@@ -1,0 +1,32 @@
+---
+title: "NIMBLEでMCMC"
+author: "伊東宏樹"
+editor: visual
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    embed-resources: true
+    slide-number: true
+lang: ja
+date: 2023-07-15
+date-format: iso
+execute:
+  echo: true
+---
+
+## NIMBLE
+
+https://r-nimble.org/
+
+## インストール
+
+```{r}
+#| eval: false
+install.packages("nimble")
+```
+
+## 使い方
+
+```{r}
+library(nimble)
+```
