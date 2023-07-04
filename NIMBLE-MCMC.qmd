@@ -28,20 +28,22 @@ execute:
 
 ## NIMBLE
 
+-   BUGS言語でモデルを記述し、統計モデルのパラメータ推定をおこなうRパッケージ
 -   ウェブサイト: <https://r-nimble.org/>
+-   "Numerical Inference for statistical Models for Bayesian and Likelihood Estimation"[^1]
 -   2023年5月31日にVersion 1.0.0リリース（現在は1.0.1）
--   BUGS言語でモデルを記述し、マルコフ連鎖モンテカルロ (MCMC) 計算
--   C++に変換、コンパイルして実行
+
+[^1]: [https://r-nimble.org/html_manual/cha-welcome-nimble.html#sec:what-is-nimble](https://r-nimble.org/html_manual/cha-welcome-nimble.html#sec:what-is-nimblehttps://r-nimble.org/html_manual/cha-welcome-nimble.html#sec:what-is-nimble)
 
 ## インストール
 
-C++コンパイラを含む開発環境が必要
+モデルをC++に変換してコンパイルして実行するので、開発環境が必要
 
 -   Windows: Rtools
 -   macOS: Command Line Tools (あるいはXcode)
--   Linuxなど: それぞれの開発環境
+-   Linuxほか: それぞれの開発環境
 
-NIMBLE本体は普通にインストール
+NIMBLE本体は普通にCRANからインストール
 
 ```{r install}
 #| eval: false
@@ -49,6 +51,8 @@ install.packages("nimble")
 ```
 
 ## 実行例
+
+まず、nimbleパッケージを読み込み
 
 ```{r libarary_nimble}
 library(nimble)
@@ -76,6 +80,8 @@ ggplot(data.frame(X, Y)) +
 
 ## モデルコード
 
+回帰モデル
+
 ```{r code}
 code <- nimbleCode({
   for (n in 1:N) {
@@ -89,7 +95,7 @@ code <- nimbleCode({
 })
 ```
 
-## NIMBLEのBUGS拡張
+## NIMBLEのBUGS拡張を使用したモデル
 
 ```{r code2}
 code2 <- nimbleCode({
@@ -102,7 +108,12 @@ code2 <- nimbleCode({
 })
 ```
 
-## あてはめ
+-   引数に式を使用可能
+-   `dnorm`のばらつきの指定に標準偏差を使用可能（分散も可）
+
+## MCMC
+
+`nimbleMCMC`関数で、マルコフ連鎖モンテカルロ (MCMC) により、モデルのあてはめとパラメータ推定を実行
 
 ```{r fit}
 #| output: false
@@ -115,12 +126,12 @@ samp <- nimbleMCMC(code = code2,
    posterior::as_draws()
 ```
 
+最後にposteriorパッケージのdrawsクラスのオブジェクトに変換
+
 ## 結果の要約
 
 ```{r summary}
-samp |>
-  summarise_draws(default_summary_measures(),
-                  "rhat")
+summary(samp, default_summary_measures(), "rhat")
 ```
 
 ## 連鎖の軌跡のプロット
@@ -137,6 +148,14 @@ bayesplot::mcmc_dens(samp)
 
 ## その他の機能
 
--   WAIC
+-   WAIC (Widely Applicable Information Criterion)
 -   空間統計モデル（CAR: Conditional AutoRegression）
 -   逐次モンテカルロ（粒子フィルタ, nimbleSMCパッケージ）
+
+など、機能豊富（詳細は[公式マニュアル](https://r-nimble.org/html_manual/cha-welcome-nimble.html)を）
+
+------------------------------------------------------------------------
+
+::: {style="padding-top: 20%; text-align: center; font-size: 400%;"}
+🥳
+:::
