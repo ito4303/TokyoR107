@@ -1,0 +1,161 @@
+---
+title: "NIMBLEでMCMC"
+author: "伊東宏樹"
+editor: visual
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    embed-resources: true
+    slide-number: true
+lang: ja
+date: 2023-07-15
+date-format: iso
+execute:
+  echo: true
+---
+
+## 自己紹介
+
+名前: 伊東宏樹
+
+勤務先: 森林総合研究所 北海道支所
+
+共訳書:
+
+::: {style="margin-left: 2em; text-align: left;"}
+[![](https://www.hanmoto.com/bd/img/9784320057807.jpg){fig-alt="BUGSで学ぶ階層モデリング入門" style="vertical-align: top;"}](https://www.hanmoto.com/bd/isbn/9784320057807) [![](https://www.hanmoto.com/bd/img/9784320058149.jpg){fig-alt="生態学のための階層モデリング" style="vertical-align: top;"}](https://www.hanmoto.com/bd/isbn/9784320058149)
+:::
+
+## NIMBLE
+
+-   BUGS言語でモデルを記述し、統計モデルのパラメータ推定をおこなうRパッケージ
+-   ウェブサイト: <https://r-nimble.org/>
+-   "Numerical Inference for statistical Models for Bayesian and Likelihood Estimation"[^1]
+-   2023年5月31日にVersion 1.0.0リリース（現在は1.0.1）
+
+[^1]: [https://r-nimble.org/html_manual/cha-welcome-nimble.html#sec:what-is-nimble](https://r-nimble.org/html_manual/cha-welcome-nimble.html#sec:what-is-nimblehttps://r-nimble.org/html_manual/cha-welcome-nimble.html#sec:what-is-nimble)
+
+## インストール
+
+モデルをC++に変換してコンパイルして実行するので、開発環境が必要
+
+-   Windows: Rtools
+-   macOS: Command Line Tools (あるいはXcode)
+-   Linuxほか: それぞれの開発環境
+
+NIMBLE本体は普通にCRANからインストール
+
+```{r install}
+#| eval: false
+install.packages("nimble")
+```
+
+## 実行例
+
+まず、nimbleパッケージを読み込み
+
+```{r libarary_nimble}
+library(nimble)
+```
+
+## データ
+
+```{r data}
+#| echo: false
+library(posterior)
+library(bayesplot)
+library(ggplot2)
+
+set.seed(123)
+N <- 40
+alpha <- 0
+beta <- 1
+sigma <- 2
+X <- runif(N, 0, 10)
+Y <- rnorm(N, alpha + beta * X, sigma)
+ggplot(data.frame(X, Y)) +
+  geom_point(aes(x = X, y = Y), size = 4, alpha = 0.7) +
+  theme_gray(base_family = "Helvetica", base_size = 18)
+```
+
+## モデルコード
+
+回帰モデル
+
+```{r code}
+code <- nimbleCode({
+  for (n in 1:N) {
+    mu[n] <- alpha + beta * X[n]
+    Y[n] ~ dnorm(mu[n], tau)
+  }
+  alpha ~ dnorm(0, 100)
+  beta ~ dnorm(0, 100)
+  tau <- 1 / (sigma * sigma)
+  sigma ~ dunif(0, 100)
+})
+```
+
+## NIMBLEのBUGS拡張を使用したモデル
+
+```{r code2}
+code2 <- nimbleCode({
+  for (n in 1:N) {
+    Y[n] ~ dnorm(alpha + beta * X[n], sd = sigma)
+  }
+  alpha ~ dnorm(0, 100)
+  beta ~ dnorm(0, 100)
+  sigma ~ dunif(0, 100)
+})
+```
+
+-   引数に式を使用可能
+-   `dnorm`のばらつきの指定に標準偏差を使用可能（分散も可）
+
+## MCMC
+
+`nimbleMCMC`関数で、マルコフ連鎖モンテカルロ (MCMC) により、モデルのあてはめとパラメータ推定を実行
+
+```{r fit}
+#| output: false
+samp <- nimbleMCMC(code = code2,
+                   constants = list(N = N),
+                   data = list(X = X, Y = Y),
+                   niter = 6000, nburnin = 1000,
+                   nchains = 3,
+                   samplesAsCodaMCMC = TRUE) |>
+   posterior::as_draws()
+```
+
+最後にposteriorパッケージのdrawsクラスのオブジェクトに変換
+
+## 結果の要約
+
+```{r summary}
+summary(samp, default_summary_measures(), "rhat")
+```
+
+## 連鎖の軌跡のプロット
+
+```{r traceplot}
+bayesplot::mcmc_trace(samp)
+```
+
+## 密度のプロット
+
+```{r densplot}
+bayesplot::mcmc_dens(samp)
+```
+
+## その他の機能
+
+-   WAIC (Widely Applicable Information Criterion)
+-   空間統計モデル（CAR: Conditional AutoRegression）
+-   逐次モンテカルロ（粒子フィルタ, nimbleSMCパッケージ）
+
+など、機能豊富（詳細は[公式マニュアル](https://r-nimble.org/html_manual/cha-welcome-nimble.html)を）
+
+------------------------------------------------------------------------
+
+::: {style="padding-top: 20%; text-align: center; font-size: 400%;"}
+🥳
+:::
