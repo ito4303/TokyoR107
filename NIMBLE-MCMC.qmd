@@ -37,7 +37,7 @@ execute:
 
 モデルをC++に変換してコンパイルして実行するので、開発環境が必要[^1]
 
-[^1]: Windows: Rtools, macOS: Command Line Tools (あるいはXcode), Linuxほか: それぞれの開発環境
+[^1]: WindowsならRtools、macOSならCommand Line Tools (あるいはXcode)、Linuxほかはそれぞれの開発環境
 
 NIMBLE本体は普通にCRANからインストール
 
