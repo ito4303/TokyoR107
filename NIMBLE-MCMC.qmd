@@ -30,18 +30,14 @@ execute:
 
 -   BUGS言語でモデルを記述し、統計モデルのパラメータ推定をおこなうRパッケージ
 -   ウェブサイト: <https://r-nimble.org/>
--   "Numerical Inference for statistical Models for Bayesian and Likelihood Estimation"[^1]
+-   NIMBLE = "Numerical Inference for statistical Models for Bayesian and Likelihood Estimation"
 -   2023年5月31日にVersion 1.0.0リリース（現在は1.0.1）
-
-[^1]: [https://r-nimble.org/html_manual/cha-welcome-nimble.html#sec:what-is-nimble](https://r-nimble.org/html_manual/cha-welcome-nimble.html#sec:what-is-nimblehttps://r-nimble.org/html_manual/cha-welcome-nimble.html#sec:what-is-nimble)
 
 ## インストール
 
-モデルをC++に変換してコンパイルして実行するので、開発環境が必要
+モデルをC++に変換してコンパイルして実行するので、開発環境が必要[^1]
 
--   Windows: Rtools
--   macOS: Command Line Tools (あるいはXcode)
--   Linuxほか: それぞれの開発環境
+[^1]: WindowsならRtools、macOSならCommand Line Tools (あるいはXcode)、Linuxほかはそれぞれの開発環境
 
 NIMBLE本体は普通にCRANからインストール
 
