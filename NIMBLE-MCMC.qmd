@@ -28,14 +28,14 @@ execute:
 
 ## NIMBLE
 
--   BUGS言語でモデルを記述し、統計モデルのパラメータ推定をおこなうRパッケージ
+-   BUGS上位互換の言語で統計モデルを記述し、パラメータ推定ができるRパッケージ
 -   ウェブサイト: <https://r-nimble.org/>
--   NIMBLE = "Numerical Inference for statistical Models for Bayesian and Likelihood Estimation"
+-   モデルをC++に変換してコンパイルして実行するので高速
 -   2023年5月31日にVersion 1.0.0リリース（現在は1.0.1）
 
 ## インストール
 
-モデルをC++に変換してコンパイルして実行するので、開発環境が必要[^1]
+C++コンパイラを使用するので、開発環境が必要[^1]
 
 [^1]: WindowsならRtools、macOSならCommand Line Tools (あるいはXcode)、Linuxほかはそれぞれの開発環境
 
