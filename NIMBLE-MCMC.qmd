@@ -30,7 +30,7 @@ execute:
 
 -   BUGS上位互換の言語で統計モデルを記述し、パラメータ推定ができるRパッケージ
 -   ウェブサイト: <https://r-nimble.org/>
--   モデルをC++に変換してコンパイルして実行するので高速
+-   モデルをC++に変換してコンパイルして実行する
 -   2023年5月31日にVersion 1.0.0リリース（現在は1.0.1）
 
 ## インストール
@@ -48,16 +48,9 @@ install.packages("nimble")
 
 ## 実行例
 
-まず、nimbleパッケージを読み込み
-
-```{r libarary_nimble}
-library(nimble)
-```
-
-## データ
-
 ```{r data}
 #| echo: false
+library(nimble)
 library(posterior)
 library(bayesplot)
 library(ggplot2)
@@ -74,9 +67,11 @@ ggplot(data.frame(X, Y)) +
   theme_gray(base_family = "Helvetica", base_size = 18)
 ```
 
+このデータに線形回帰モデルをあてはめ
+
 ## モデルコード
 
-回帰モデル
+`nimbleCode`関数の中でBUGS言語でモデルを記述
 
 ```{r code}
 code <- nimbleCode({
@@ -91,7 +86,7 @@ code <- nimbleCode({
 })
 ```
 
-## NIMBLEのBUGS拡張を使用したモデル
+## NIMBLEのBUGS拡張
 
 ```{r code2}
 code2 <- nimbleCode({
